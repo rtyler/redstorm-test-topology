@@ -2,3 +2,5 @@
 .ruby-*
 build/
 .gradle/
+target/
+.bundle/

@@ -1,0 +1,27 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+dependencies {
+  // using transitive false here to avoid
+  // pulling in the storm dependency
+  runtime group: 'com.lookout',
+           name: 'redstorm',
+        version: '0.0.9-SNAPSHOT',
+     transitive: false
+}
+
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
+
+jar {
+  from 'src/main/ruby'
+
+  into('libs') {
+    from configurations.runtime
+  }
+}
+
+
+// vim: ft=groovy
