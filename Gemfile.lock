@@ -1,0 +1,17 @@
+PATH
+  remote: ~/source/github/ruby/redstorm
+  specs:
+    redstorm (0.7.0.beta1)
+      rake
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rake (10.3.2)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  rake
+  redstorm!
