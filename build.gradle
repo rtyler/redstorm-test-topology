@@ -6,22 +6,65 @@ dependencies {
   // pulling in the storm dependency
   runtime group: 'com.lookout',
            name: 'redstorm',
-        version: '0.0.9-SNAPSHOT',
+        version: '0.0.14-SNAPSHOT',
      transitive: false
 }
 
 repositories {
   mavenCentral()
   mavenLocal()
-}
 
-jar {
-  from 'src/main/ruby'
-
-  into('libs') {
-    from configurations.runtime
+  maven {
+    // More details here: <http://rubygems-proxy.torquebox.org/>
+    url "http://rubygems-proxy.torquebox.org/releases"
   }
 }
 
+dependencies {
+  runtime group: 'rubygems', name: 'rake', version: '10.3.+'
+}
+
+
+def extractGem(File gem) {
+  def gemname = gem.getName().replaceAll(~".gem", "")
+  File extract_dir = new File("./target/gems/gems/$gemname")
+
+  if (extract_dir.exists()) {
+    return
+  }
+
+  exec {
+    executable "gem"
+    args 'install', gem, '--install-dir=./target/gems', '--no-ri', '--no-rdoc'
+  }
+}
+
+task cachegems(type: Copy) {
+    into ".gemcache"
+    from configurations.runtime
+    include '**/*.gem'
+}
+
+task preparegems {
+  dependsOn cachegems
+
+  doLast {
+    FileTree tree = fileTree(dir: '.gemcache/', include: "*.gem")
+    tree.each {File f -> extractGem(f) }
+  }
+}
+
+jar {
+  dependsOn preparegems
+  from 'src/main/ruby'
+
+  into('gems') {
+    from 'target/gems'
+  }
+
+  from configurations.runtime.filter { it.name.endsWith('.jar') }.collect { zipTree(it) }
+
+  manifest { attributes 'Main-Class': 'redstorm.TopologyLauncher' }
+}
 
 // vim: ft=groovy
